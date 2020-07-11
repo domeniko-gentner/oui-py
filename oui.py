@@ -27,8 +27,8 @@ def download_oui_defs(fpath: str, force_dl=False) -> bool:
             return False
 
 
-def parse_definitions(fpath: str) -> dict:
-    result = dict()
+def lookup(fpath: str, mac: str) -> bool:
+    vendor = mac[0:8].upper().replace(":", "-")
     pattern = compile(r"""^[0-9A-F]{2}    # match first octett at start of string
                            [-]            # match literal -
                            [0-9A-F]{2}    # match second otctett
@@ -44,15 +44,9 @@ def parse_definitions(fpath: str) -> dict:
                 entry = entry.split("\t")
                 oui = entry[0].split()[0]
                 name = entry[-1]
-                result[oui] = name
-    return result
-
-
-def lookup(macs: dict, mac: str) -> bool:
-    vendor = mac[0:8].upper().replace(":", "-")
-    if vendor in macs:
-        print(f"{Fore.GREEN}{mac} belongs to {macs[vendor]}")
-        return True
+                if vendor == oui:
+                    print(f"{Fore.GREEN}{mac} belongs to {name}")
+                    return True
     print(f"{Fore.RED}Couldn't find oui {vendor}")
     return False
 
@@ -76,7 +70,7 @@ if __name__ == "__main__":
     if not download_oui_defs(f_path, args.force):
         sys.exit(1)
 
-    if not lookup(parse_definitions(f_path), args.mac):
+    if not lookup(f_path, args.mac):
         sys.exit(1)
 
     sys.exit(0)
