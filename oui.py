@@ -74,13 +74,12 @@ if __name__ == "__main__":
         f_path = expanduser("~/.oui/oui.txt")
 
     if not download_oui_defs(f_path, args.force):
-        print(f"{Fore.RED}Something went wrong during the download")
         sys.exit(1)
 
     if not lookup(parse_definitions(f_path), args.mac):
         sys.exit(1)
 
-    sys.exit(1)
+    sys.exit(0)
 
 
 
