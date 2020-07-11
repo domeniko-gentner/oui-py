@@ -23,7 +23,7 @@ def download_oui_defs(fpath: str, force_dl=False) -> bool:
                 fp.write(r.content)
             return True
         else:
-            print(f"{Fore.RED}Couldn't download oui definitions!")
+            print(f"{Fore.RED}Couldn't download oui definitions! HTTP status was {r.status_code}")
             return False
 
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         f_path = args.file
 
     if not download_oui_defs(f_path, args.force):
-        print(f"{Fore.RED}Something wen't wrong during the download")
+        print(f"{Fore.RED}Something went wrong during the download")
         sys.exit(1)
 
     mac_arg = args.mac
