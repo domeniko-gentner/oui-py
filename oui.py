@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from colorama import Fore, init
 from os.path import isfile, expanduser, isdir
 from os import stat, mkdir
-import platform
 import requests
 import sys
 import re
