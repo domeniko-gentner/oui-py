@@ -61,7 +61,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="oui.py: MAC vendor lookup")
     parser.add_argument("mac", help="The MAC address to process")
     parser.add_argument("--force", action="store_true", help="Force download of definitions file")
-    parser.add_argument("--file", help="Force download of definitions file")
+    parser.add_argument("--file", help="Override where file is stored and/or use this definition file")
     args = parser.parse_args()
 
     if args.file:
