@@ -2,7 +2,7 @@ import sys
 from argparse import ArgumentParser
 from os import stat, mkdir
 from os.path import isfile, expanduser, isdir
-from re import compile, match as rmatch
+from re import compile, match as rmatch, VERBOSE
 from colorama import Fore, init
 from requests import get as r_get
 
@@ -29,7 +29,13 @@ def download_oui_defs(fpath: str, force_dl=False) -> bool:
 
 def parse_definitions(fpath: str) -> dict:
     result = dict()
-    pattern = compile("^[0-9A-F_]{2}[-][0-9A-F_]{2}[-][0-9A-F_]{2} .*$")
+    pattern = compile(r"""^[0-9A-F]{2}    # match first octett at start of string
+                           [-]            # match literal -
+                           [0-9A-F]{2}    # match second otctett
+                           [-]            # match literal -
+                           [0-9A-F]{2}    # match third octett
+                           .*$            # match until end of string""", flags=VERBOSE)
+
     with open(fpath, "rb") as fp_read:
         for line in fp_read:
             match = rmatch(pattern, line.decode('utf8'))
