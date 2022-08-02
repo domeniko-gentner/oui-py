@@ -31,7 +31,7 @@ def lookup(fpath: str, mac: str) -> bool:
     vendor = mac[0:8].upper().replace(":", "-")
     pattern = compile(r"""^[0-9A-F]{2}    # match first octett at start of string
                            [-]            # match literal -
-                           [0-9A-F]{2}    # match second otctett
+                           [0-9A-F]{2}    # match second octett
                            [-]            # match literal -
                            [0-9A-F]{2}    # match third octett
                            .*$            # match until end of string""", flags=VERBOSE)
