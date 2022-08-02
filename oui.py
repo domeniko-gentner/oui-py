@@ -1,42 +1,45 @@
 import sys
+import time
 from argparse import ArgumentParser
-from os import stat, mkdir
-from os.path import isfile, expanduser, isdir
 from re import compile, match as rmatch, VERBOSE
 from colorama import Fore, init
 from requests import get as r_get
+from pathlib import Path
+from time import time
 
 
-def download_oui_defs(fpath: str, force_dl=False) -> bool:
-    # file exists and is not older than 1 week
-    if (isfile(fpath) and stat(fpath).st_mtime > 604800) and not force_dl:
-        print(f"{Fore.CYAN}Definitions exist and file is less than one week old, omitting download")
-        return True
-    else:
-        if force_dl:
-            print(f"{Fore.LIGHTRED_EX}Download forced, please wait...")
-        else:
-            print(f"{Fore.CYAN}Definitions not found or too old, downloading file, please wait...")
-        r = r_get("http://standards-oui.ieee.org/oui.txt")
-        if r.status_code == 200:
-            with open(fpath, "wb") as fp:
-                fp.write(r.content)
+def download_oui_defs(def_file: Path, force_dl=False) -> bool:
+    # check if file exists and is not older than 1 month
+    time_diff = (time() - def_file.stat().st_mtime) - 2630000
+    if not force_dl:
+        if def_file.is_file() and int(time_diff) <= 0:
+            print(f"{Fore.CYAN}Definitions exist and file is less than one week old, omitting download")
             return True
         else:
-            print(f"{Fore.RED}Couldn't download oui definitions! HTTP status was {r.status_code}")
-            return False
+            if force_dl:
+                print(f"{Fore.LIGHTRED_EX}Download forced, please wait...")
+            else:
+                print(f"{Fore.CYAN}Definitions not found or too old, downloading file, please wait...")
+            r = r_get("https://standards-oui.ieee.org/oui.txt")
+            if r.status_code == 200:
+                with def_file.open('wb') as fp:
+                    fp.write(r.content)
+                return True
+            else:
+                print(f"{Fore.RED}Couldn't download oui definitions! HTTP status was {r.status_code}")
+                return False
 
 
-def lookup(fpath: str, mac: str) -> bool:
+def lookup(def_file: Path, mac: str) -> bool:
     vendor = mac[0:8].upper().replace(":", "-")
     pattern = compile(r"""^[0-9A-F]{2}    # match first octett at start of string
-                           [-]            # match literal -
+                           -              # match literal -
                            [0-9A-F]{2}    # match second octett
-                           [-]            # match literal -
+                           -              # match literal -
                            [0-9A-F]{2}    # match third octett
                            .*$            # match until end of string""", flags=VERBOSE)
 
-    with open(fpath, "rb") as fp_read:
+    with def_file.open("rb") as fp_read:
         for line in fp_read:
             match = rmatch(pattern, line.decode('utf8'))
             if match:
@@ -51,29 +54,30 @@ def lookup(fpath: str, mac: str) -> bool:
     return False
 
 
-if __name__ == "__main__":
+def main():
     init(autoreset=True)
 
     parser = ArgumentParser(description="oui.py: MAC vendor lookup")
     parser.add_argument("mac", help="The MAC address to process")
     parser.add_argument("--force", action="store_true", help="Force download of definitions file")
-    parser.add_argument("--file", help="Override where file is stored and/or use this definition file")
     args = parser.parse_args()
 
-    if args.file:
-        f_path = args.file
-    else:
-        if not isdir(expanduser("~/.oui")):
-            mkdir(expanduser("~/.oui"))
-        f_path = expanduser("~/.oui/oui.txt")
+    home_path = Path("~/.oui")
+    home_path = home_path.expanduser()
+    home_path.mkdir(exist_ok=True)
+    def_file = home_path / "oui.txt"
 
-    if not download_oui_defs(f_path, args.force):
+    if not download_oui_defs(def_file, args.force):
         sys.exit(1)
 
-    if not lookup(f_path, args.mac):
+    if not lookup(def_file, args.mac):
         sys.exit(1)
 
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
 
 
 
