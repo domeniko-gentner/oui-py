@@ -1,5 +1,4 @@
 import sys
-import time
 from argparse import ArgumentParser
 from re import compile, match as rmatch, VERBOSE
 from colorama import Fore, init
