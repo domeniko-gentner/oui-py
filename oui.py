@@ -19,7 +19,7 @@ def download_oui_defs(def_file: Path, force_dl=False) -> bool:
                 print(f"{Fore.LIGHTRED_EX}Download forced, please wait...")
             else:
                 print(f"{Fore.CYAN}Definitions not found or too old, downloading file, please wait...")
-            r = r_get("https://standards-oui.ieee.org/oui.txt")
+            r = r_get("https://standards-oui.ieee.org/oui.txt", allow_redirects=False)
             if r.status_code == 200:
                 with def_file.open('wb') as fp:
                     fp.write(r.content)
